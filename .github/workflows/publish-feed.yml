@@ -6,7 +6,8 @@ on:
       force:
         description: "Force publish even if the feed hasn't changed"
         required: false
-        default: "false"
+        type: boolean
+        default: true
   schedule:
     - cron: "0 3 * * *"
 
@@ -42,7 +43,7 @@ jobs:
         id: should_publish
         shell: bash
         env:
-          PAGES_URI: ${{ steps.config_pages.outputs.base_url }}/confs.rss
+          DEPLOYED_URI: ${{ steps.config_pages.outputs.base_url }}/confs.rss
         run: |
           should_publish="$(node ./scripts/check-hash.js)"
           echo "value=${should_publish}" >> "${GITHUB_OUTPUT}"
