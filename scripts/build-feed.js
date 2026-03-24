@@ -10,7 +10,7 @@ import { CONFERENCES_URL, TYPES_URL, createSourceHash } from './source-hash.js';
 const FEED_OUTPUT_FILE = resolve(process.cwd(), 'confs.rss');
 const HTML_OUTPUT_FILE = resolve(process.cwd(), 'index.html');
 const README_FILE = resolve(process.cwd(), 'README.md');
-const MARKDOWN_CSS_FILE = resolve(process.cwd(), 'node_modules/github-markdown-css/github-markdown.css');
+const MARKDOWN_CSS_FILE = resolve(process.cwd(), 'node_modules/github-markdown-css/github-markdown-light.css');
 
 async function fetchText(url) {
   const response = await fetch(url, {
@@ -293,10 +293,7 @@ async function main() {
   const readmeHtml = marked.parse(readmeMarkdown);
   const html = buildHtml(readmeHtml, markdownCss, siteUrl);
 
-  await Promise.all([
-    writeFile(FEED_OUTPUT_FILE, rss, 'utf8'),
-    writeFile(HTML_OUTPUT_FILE, html, 'utf8'),
-  ]);
+  await Promise.all([writeFile(FEED_OUTPUT_FILE, rss, 'utf8'), writeFile(HTML_OUTPUT_FILE, html, 'utf8')]);
   process.stdout.write(`Wrote ${filteredConferences.length} items to ${FEED_OUTPUT_FILE} and ${HTML_OUTPUT_FILE}\n`);
 }
 
