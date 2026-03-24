@@ -1,17 +1,36 @@
-# SE Deadlines RSS
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-This repository builds and publishes an RSS feed for software engineering conference deadlines based on the upstream SE Deadlines dataset.
+## Getting Started
 
-The generator fetches the upstream conference data, keeps deadlines that are still upcoming or at most six months old, and publishes the resulting feed together with this small project page.
+First, run the development server:
 
-RSS feed: [confs.rss](./confs.rss)
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
-## Upstream data
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Big thank you to the upstream SE Deadlines project for maintaining the source dataset:
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-- [se-deadlines/se-deadlines.github.io](https://github.com/se-deadlines/se-deadlines.github.io)
-- [conferences.yml](https://raw.githubusercontent.com/se-deadlines/se-deadlines.github.io/refs/heads/main/_data/conferences.yml)
-- [types.yml](https://raw.githubusercontent.com/se-deadlines/se-deadlines.github.io/refs/heads/main/_data/types.yml)
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-This repository only republishes a filtered RSS view of that data.
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
