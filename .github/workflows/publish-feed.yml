@@ -1,0 +1,131 @@
+name: Publish feed
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * *"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: publish-feed
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Resolve feed URL
+        id: feed_url
+        shell: bash
+        run: |
+          owner_lower="$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
+          repo_name="${GITHUB_REPOSITORY#*/}"
+
+          if [ "${repo_name}" = "${owner_lower}.github.io" ]; then
+            base_url="https://${owner_lower}.github.io/"
+          else
+            base_url="https://${owner_lower}.github.io/${repo_name}/"
+          fi
+
+          echo "base_url=${base_url}" >> "${GITHUB_OUTPUT}"
+          echo "feed_url=${base_url}confs.fss" >> "${GITHUB_OUTPUT}"
+
+      - name: Compute current upstream hash
+        id: upstream_hash
+        shell: bash
+        run: |
+          source_hash="$(node --input-type=module <<'EOF'
+          import { createHash } from "node:crypto";
+
+          const conferencesUrl = "https://raw.githubusercontent.com/se-deadlines/se-deadlines.github.io/refs/heads/main/_data/conferences.yml";
+          const typesUrl = "https://raw.githubusercontent.com/se-deadlines/se-deadlines.github.io/refs/heads/main/_data/types.yml";
+          const delimiter = "\n--SOURCE-DELIMITER--\n";
+
+          const responses = await Promise.all([fetch(conferencesUrl), fetch(typesUrl)]);
+          for (const response of responses) {
+            if (!response.ok) {
+              throw new Error(`Fetch failed: ${response.url} ${response.status} ${response.statusText}`);
+            }
+          }
+
+          const [conferencesText, typesText] = await Promise.all(
+            responses.map((response) => response.text()),
+          );
+
+          const hash = createHash("sha256")
+            .update(conferencesText)
+            .update(delimiter)
+            .update(typesText)
+            .digest("hex");
+
+          process.stdout.write(hash);
+          EOF
+          )"
+
+          echo "value=${source_hash}" >> "${GITHUB_OUTPUT}"
+
+      - name: Fetch published feed hash
+        id: published_hash
+        shell: bash
+        run: |
+          previous_hash="$(curl --silent --show-error --location --fail "${{ steps.feed_url.outputs.feed_url }}" \
+            | sed -n 's/.*source-hash: \([0-9a-f]\{64\}\).*/\1/p' \
+            | head -n 1 || true)"
+
+          echo "value=${previous_hash}" >> "${GITHUB_OUTPUT}"
+
+      - name: Decide whether deployment is needed
+        id: should_publish
+        shell: bash
+        run: |
+          if [ -n "${{ steps.published_hash.outputs.value }}" ] && [ "${{ steps.published_hash.outputs.value }}" = "${{ steps.upstream_hash.outputs.value }}" ]; then
+            echo "value=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          echo "value=true" >> "${GITHUB_OUTPUT}"
+
+      - name: Install dependencies
+        if: steps.should_publish.outputs.value == 'true'
+        shell: bash
+        run: npm install
+
+      - name: Build feed
+        if: steps.should_publish.outputs.value == 'true'
+        shell: bash
+        env:
+          SITE_URL: ${{ steps.feed_url.outputs.base_url }}
+        run: npm run build
+
+      - name: Prepare Pages artifact
+        if: steps.should_publish.outputs.value == 'true'
+        shell: bash
+        run: |
+          mkdir -p _site
+          cp confs.fss _site/confs.fss
+
+      - name: Upload Pages artifact
+        if: steps.should_publish.outputs.value == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        if: steps.should_publish.outputs.value == 'true'
+        uses: actions/deploy-pages@v4

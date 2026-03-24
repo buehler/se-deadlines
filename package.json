@@ -1,0 +1,23 @@
+{
+  "name": "se-deadlines",
+  "version": "1.0.0",
+  "description": "Generate an RSS feed from se-deadlines upstream conference data.",
+  "private": true,
+  "scripts": {
+    "build": "node ./scripts/build-feed.js"
+  },
+  "keywords": [
+    "rss",
+    "conference",
+    "se-deadlines"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "feed": "5.1.0",
+    "js-yaml": "4.1.0"
+  }
+}
