@@ -7,7 +7,7 @@ import yaml from 'js-yaml';
 
 import { CONFERENCES_URL, TYPES_URL, createSourceHash } from './source-hash.js';
 
-const OUTPUT_FILE = resolve(process.cwd(), 'confs.fss');
+const OUTPUT_FILE = resolve(process.cwd(), 'confs.rss');
 
 async function fetchText(url) {
   const response = await fetch(url, {
@@ -168,7 +168,7 @@ function createGuid(conference, canonicalDeadline) {
 }
 
 function buildFeed(conferences, tagLookup, sourceHash, siteUrl) {
-  const feedUrl = joinUrl(siteUrl, 'confs.fss');
+  const feedUrl = joinUrl(siteUrl, 'confs.rss');
   const latestDeadline = conferences.at(-1)?.canonicalDeadline ?? new Date();
   const feed = new Feed({
     id: siteUrl,
