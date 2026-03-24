@@ -37,7 +37,7 @@ jobs:
         id: should_publish
         shell: bash
         env:
-          DEPLOYED_URI: ${{ steps.config_pages.outputs.base_url }}"/confs.fss"
+          DEPLOYED_URI: ${{ steps.config_pages.outputs.base_url }}/confs.fss
         run: |
           should_publish="$(node ./scripts/check-hash.js)"
           echo "value=${should_publish}" >> "${GITHUB_OUTPUT}"
@@ -51,7 +51,7 @@ jobs:
         if: steps.should_publish.outputs.value == 'true'
         shell: bash
         env:
-          SITE_URL: ${{ steps.config_pages.outputs.base_url }}"/confs.fss"
+          SITE_URL: ${{ steps.config_pages.outputs.base_url }}/confs.fss
         run: npm run build
 
       - name: Prepare Pages artifact
