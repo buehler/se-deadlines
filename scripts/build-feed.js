@@ -5,14 +5,11 @@ import { resolve } from 'node:path';
 import { Feed } from 'feed';
 import yaml from 'js-yaml';
 
-const CONFERENCES_URL =
-  'https://raw.githubusercontent.com/se-deadlines/se-deadlines.github.io/refs/heads/main/_data/conferences.yml';
-const TYPES_URL = 'https://raw.githubusercontent.com/se-deadlines/se-deadlines.github.io/refs/heads/main/_data/types.yml';
-const SOURCE_DELIMITER = '\n--SOURCE-DELIMITER--\n';
+import { CONFERENCES_URL, TYPES_URL, createSourceHash } from './source-hash.js';
+
 const OUTPUT_FILE = resolve(process.cwd(), 'confs.fss');
 
 async function fetchText(url) {
-  console.log(`Fetch ${url}`);
   const response = await fetch(url, {
     headers: {
       'user-agent': 'se-deadlines-feed-generator/1.0',
@@ -24,10 +21,6 @@ async function fetchText(url) {
   }
 
   return response.text();
-}
-
-function createSourceHash(conferencesText, typesText) {
-  return createHash('sha256').update(conferencesText).update(SOURCE_DELIMITER).update(typesText).digest('hex');
 }
 
 function parseYaml(text, label) {
@@ -260,7 +253,9 @@ async function main() {
   process.stdout.write(`Wrote ${filteredConferences.length} items to ${OUTPUT_FILE}\n`);
 }
 
-main().catch((error) => {
-  process.stderr.write(`${error instanceof Error ? error.stack : String(error)}\n`);
-  process.exitCode = 1;
-});
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((error) => {
+    process.stderr.write(`${error instanceof Error ? error.stack : String(error)}\n`);
+    process.exitCode = 1;
+  });
+}

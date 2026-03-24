@@ -4,7 +4,8 @@
   "description": "Generate an RSS feed from se-deadlines upstream conference data.",
   "private": true,
   "scripts": {
-    "build": "node ./scripts/build-feed.js"
+    "build": "node ./scripts/build-feed.js",
+    "check-hash": "node ./scripts/check-hash.js"
   },
   "keywords": [
     "rss",
