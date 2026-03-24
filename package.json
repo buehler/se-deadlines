@@ -19,6 +19,8 @@
   },
   "dependencies": {
     "feed": "5.1.0",
-    "js-yaml": "4.1.0"
+    "github-markdown-css": "5.8.1",
+    "js-yaml": "4.1.0",
+    "marked": "16.3.0"
   }
 }

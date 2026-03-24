@@ -1,13 +1,16 @@
-import { createHash } from 'node:crypto';
-import { writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { Feed } from 'feed';
 import yaml from 'js-yaml';
+import { marked } from 'marked';
 
 import { CONFERENCES_URL, TYPES_URL, createSourceHash } from './source-hash.js';
 
-const OUTPUT_FILE = resolve(process.cwd(), 'confs.rss');
+const FEED_OUTPUT_FILE = resolve(process.cwd(), 'confs.rss');
+const HTML_OUTPUT_FILE = resolve(process.cwd(), 'index.html');
+const README_FILE = resolve(process.cwd(), 'README.md');
+const MARKDOWN_CSS_FILE = resolve(process.cwd(), 'node_modules/github-markdown-css/github-markdown.css');
 
 async function fetchText(url) {
   const response = await fetch(url, {
@@ -156,15 +159,12 @@ function sanitizeText(value) {
 }
 
 function createGuid(conference, canonicalDeadline) {
-  return createHash('sha256')
-    .update(sanitizeText(conference.name))
-    .update('|')
-    .update(String(conference.year ?? ''))
-    .update('|')
-    .update(sanitizeText(conference.link))
-    .update('|')
-    .update(canonicalDeadline.toISOString())
-    .digest('hex');
+  return [
+    sanitizeText(conference.name),
+    String(conference.year ?? ''),
+    sanitizeText(conference.link),
+    canonicalDeadline.toISOString(),
+  ].join('|');
 }
 
 function buildFeed(conferences, tagLookup, sourceHash, siteUrl) {
@@ -207,6 +207,49 @@ function buildFeed(conferences, tagLookup, sourceHash, siteUrl) {
     : `${sourceComment}\n${rss}`;
 }
 
+function buildHtml(readmeHtml, markdownCss, siteUrl) {
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SE Deadlines RSS</title>
+    <style>
+${markdownCss}
+body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 48px 24px;
+  background: #f6f8fa;
+}
+.markdown-body {
+  padding: 32px;
+  background: #ffffff;
+  border: 1px solid #d0d7de;
+  border-radius: 12px;
+}
+@media (max-width: 767px) {
+  body {
+    padding: 16px;
+  }
+  .markdown-body {
+    padding: 24px;
+  }
+}
+    </style>
+    <link rel="alternate" type="application/rss+xml" title="SE Deadlines RSS" href="${joinUrl(siteUrl, 'confs.rss')}">
+  </head>
+  <body>
+    <main class="markdown-body">
+${readmeHtml}
+    </main>
+  </body>
+</html>
+`;
+}
+
 function filterConferences(conferences) {
   const now = new Date();
   const cutoff = subtractCalendarMonths(now, 6);
@@ -233,24 +276,28 @@ function filterConferences(conferences) {
 }
 
 async function main() {
-  const [conferencesText, typesText] = await Promise.all([fetchText(CONFERENCES_URL), fetchText(TYPES_URL)]);
+  const [conferencesText, typesText, readmeMarkdown, markdownCss] = await Promise.all([
+    fetchText(CONFERENCES_URL),
+    fetchText(TYPES_URL),
+    readFile(README_FILE, 'utf8'),
+    readFile(MARKDOWN_CSS_FILE, 'utf8'),
+  ]);
 
   const sourceHash = createSourceHash(conferencesText, typesText);
-
-  if (process.argv.includes('--hash-only')) {
-    process.stdout.write(`${sourceHash}\n`);
-    return;
-  }
-
   const conferenceEntries = parseYaml(conferencesText, 'conferences.yml');
   const typeEntries = parseYaml(typesText, 'types.yml');
   const tagLookup = buildTagLookup(typeEntries);
   const filteredConferences = filterConferences(conferenceEntries);
   const siteUrl = process.env.SITE_URL?.trim() || 'https://example.invalid/';
   const rss = buildFeed(filteredConferences, tagLookup, sourceHash, siteUrl);
+  const readmeHtml = marked.parse(readmeMarkdown);
+  const html = buildHtml(readmeHtml, markdownCss, siteUrl);
 
-  await writeFile(OUTPUT_FILE, rss, 'utf8');
-  process.stdout.write(`Wrote ${filteredConferences.length} items to ${OUTPUT_FILE}\n`);
+  await Promise.all([
+    writeFile(FEED_OUTPUT_FILE, rss, 'utf8'),
+    writeFile(HTML_OUTPUT_FILE, html, 'utf8'),
+  ]);
+  process.stdout.write(`Wrote ${filteredConferences.length} items to ${FEED_OUTPUT_FILE} and ${HTML_OUTPUT_FILE}\n`);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
