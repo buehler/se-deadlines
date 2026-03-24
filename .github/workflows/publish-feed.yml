@@ -2,6 +2,11 @@ name: Publish feed
 
 on:
   workflow_dispatch:
+    inputs:
+      force:
+        description: "Force publish even if the feed hasn't changed"
+        required: false
+        default: "false"
   schedule:
     - cron: "0 3 * * *"
 
@@ -43,31 +48,31 @@ jobs:
           echo "value=${should_publish}" >> "${GITHUB_OUTPUT}"
 
       - name: Install dependencies
-        if: steps.should_publish.outputs.value == 'true'
+        if: steps.should_publish.outputs.value == 'true' || github.event.inputs.force == 'true'
         shell: bash
         run: npm ci
 
       - name: Build feed
-        if: steps.should_publish.outputs.value == 'true'
+        if: steps.should_publish.outputs.value == 'true' || github.event.inputs.force == 'true'
         shell: bash
         env:
           SITE_URL: ${{ steps.config_pages.outputs.base_url }}/confs.fss
         run: npm run build
 
       - name: Prepare Pages artifact
-        if: steps.should_publish.outputs.value == 'true'
+        if: steps.should_publish.outputs.value == 'true' || github.event.inputs.force == 'true'
         shell: bash
         run: |
           mkdir -p _site
           cp confs.fss _site/confs.fss
 
       - name: Upload Pages artifact
-        if: steps.should_publish.outputs.value == 'true'
+        if: steps.should_publish.outputs.value == 'true' || github.event.inputs.force == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
-        if: steps.should_publish.outputs.value == 'true'
+        if: steps.should_publish.outputs.value == 'true' || github.event.inputs.force == 'true'
         uses: actions/deploy-pages@v4
