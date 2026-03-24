@@ -189,12 +189,16 @@ function buildFeed(conferences, tagLookup, sourceHash, siteUrl) {
     if (conference.year != null) {
       titleParts.push(String(conference.year));
     }
-
+    console.log(conference);
     feed.addItem({
       id: createGuid(conference, conference.canonicalDeadline),
       title: titleParts.join(' ').trim(),
       link: sanitizeText(conference.link) || feedUrl,
       description: buildItemDescription(conference, conference.canonicalDeadline, tagLookup),
+      category:
+        conference.tags?.map((t) => ({
+          name: t,
+        })) ?? [],
       date: conference.canonicalDeadline,
     });
   }

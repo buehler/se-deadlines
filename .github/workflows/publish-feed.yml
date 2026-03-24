@@ -2,12 +2,9 @@ name: Publish feed
 
 on:
   workflow_dispatch:
-    inputs:
-      force:
-        description: "Force publish even if the feed hasn't changed"
-        required: false
-        type: boolean
-        default: true
+  push:
+    branches:
+      - main
   schedule:
     - cron: "0 3 * * *"
 
@@ -49,19 +46,19 @@ jobs:
           echo "value=${should_publish}" >> "${GITHUB_OUTPUT}"
 
       - name: Install dependencies
-        if: steps.should_publish.outputs.value == 'true' || github.event.inputs.force == 'true'
+        if: steps.should_publish.outputs.value == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
         shell: bash
         run: npm ci
 
       - name: Build feed
-        if: steps.should_publish.outputs.value == 'true' || github.event.inputs.force == 'true'
+        if: steps.should_publish.outputs.value == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
         shell: bash
         env:
           SITE_URL: ${{ steps.config_pages.outputs.base_url }}
         run: npm run build
 
       - name: Prepare Pages artifact
-        if: steps.should_publish.outputs.value == 'true' || github.event.inputs.force == 'true'
+        if: steps.should_publish.outputs.value == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
         shell: bash
         run: |
           mkdir -p _site
@@ -69,12 +66,12 @@ jobs:
           cp index.html _site/index.html
 
       - name: Upload Pages artifact
-        if: steps.should_publish.outputs.value == 'true' || github.event.inputs.force == 'true'
+        if: steps.should_publish.outputs.value == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
-        if: steps.should_publish.outputs.value == 'true' || github.event.inputs.force == 'true'
+        if: steps.should_publish.outputs.value == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
         uses: actions/deploy-pages@v4
