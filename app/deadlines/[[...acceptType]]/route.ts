@@ -126,9 +126,14 @@ async function formatRSS(venues: ConvertedVenue[], uri: NextURL) {
   return { contentType, data: buildFeed(venues, uri).rss2() };
 }
 
-async function formatJSON(venues: ConvertedVenue[], uri: NextURL) {
+async function formatJsonFeed(venues: ConvertedVenue[], uri: NextURL) {
   const contentType = 'application/feed+json;charset=utf-8';
   return { contentType, data: buildFeed(venues, uri).json1() };
+}
+
+async function formatJson(venues: ConvertedVenue[], uri: NextURL) {
+  const contentType = 'application/json;charset=utf-8';
+  return { contentType, data: JSON.stringify(venues) };
 }
 
 async function formatAtom(venues: ConvertedVenue[], uri: NextURL) {
@@ -179,7 +184,8 @@ const converters: {
   [key: string]: (venues: ConvertedVenue[], uri: NextURL) => Promise<{ contentType: string; data: string }>;
 } = {
   rss: formatRSS,
-  json: formatJSON,
+  'json-feed': formatJsonFeed,
+  json: formatJson,
   atom: formatAtom,
   ical: formatICAL,
   default: formatText,
@@ -212,21 +218,6 @@ export async function GET(
   const result = !!searchQ ? RsqlFilter.getInstance().filter(searchQ, venues) : venues;
 
   const { contentType, data } = await (converters[requestedType] || converters['default'])(result, request.nextUrl);
-
-  // let contentType, data;
-  // if (requestedType === 'rss') {
-  //   contentType = 'application/rss+xml;charset=utf-8';
-  //   data = `<rss>...</rss>`;
-  // } else if (requestedType === 'json') {
-  //   contentType = 'application/json;charset=utf-8';
-  //   data = JSON.stringify({ conferences: [] });
-  // } else if (requestedType === 'ical') {
-  //   contentType = 'text/calendar;charset=utf-8';
-  //   data = 'BEGIN:VCALENDAR...';
-  // } else {
-  //   contentType = 'text/plain;charset=utf-8';
-  //   data = 'TEXT';
-  // }
 
   return new NextResponse(data, {
     headers: {
