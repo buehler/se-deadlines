@@ -12,13 +12,6 @@ export const CONFERENCES_URL =
 // export const TYPES_URL =
 //   'https://raw.githubusercontent.com/se-deadlines/se-deadlines.github.io/refs/heads/main/_data/types.yml';
 
-type Type = 'venue' | 'track' | 'others';
-type Tag = {
-  name: string;
-  tag: string;
-  type: Type;
-};
-
 type Venue = {
   name: string;
   description: string;
@@ -131,7 +124,7 @@ async function formatJsonFeed(venues: ConvertedVenue[], uri: NextURL) {
   return { contentType, data: buildFeed(venues, uri).json1() };
 }
 
-async function formatJson(venues: ConvertedVenue[], uri: NextURL) {
+async function formatJson(venues: ConvertedVenue[]) {
   const contentType = 'application/json;charset=utf-8';
   return { contentType, data: JSON.stringify(venues) };
 }

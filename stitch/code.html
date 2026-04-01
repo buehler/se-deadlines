@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Academic Archivist | SE Conference Tracker</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary-container": "#5862ff",
+                        "on-secondary-container": "#295782",
+                        "background": "#fbf9f8",
+                        "on-primary-fixed": "#001d34",
+                        "inverse-on-surface": "#f3f0f0",
+                        "on-tertiary-fixed-variant": "#0000ef",
+                        "secondary-fixed-dim": "#9fcafb",
+                        "surface-container-lowest": "#ffffff",
+                        "outline": "#717881",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#bec2ff",
+                        "surface-variant": "#e4e2e1",
+                        "surface-container": "#f0eded",
+                        "secondary": "#34618d",
+                        "on-primary-fixed-variant": "#004a79",
+                        "primary-container": "#337ab7",
+                        "error-container": "#ffdad6",
+                        "primary": "#06619c",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed": "#00006e",
+                        "tertiary-fixed": "#e0e0ff",
+                        "on-surface": "#1b1c1c",
+                        "inverse-primary": "#9bcbff",
+                        "surface-container-high": "#eae8e7",
+                        "on-tertiary-container": "#fffeff",
+                        "on-primary-container": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#1b1c1c",
+                        "surface-container-highest": "#e4e2e1",
+                        "surface": "#fbf9f8",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#0a629e",
+                        "secondary-container": "#a2cdfe",
+                        "surface-bright": "#fbf9f8",
+                        "inverse-surface": "#303030",
+                        "primary-fixed": "#d0e4ff",
+                        "on-secondary-fixed": "#001d35",
+                        "on-secondary": "#ffffff",
+                        "surface-container-low": "#f6f3f2",
+                        "on-secondary-fixed-variant": "#174973",
+                        "on-surface-variant": "#414750",
+                        "outline-variant": "#c1c7d1",
+                        "surface-dim": "#dcd9d9",
+                        "primary-fixed-dim": "#9bcbff",
+                        "secondary-fixed": "#d0e4ff",
+                        "tertiary": "#313bff",
+                        "on-error": "#ffffff"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fbf9f8;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<div class="flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="w-full top-0 sticky bg-[#fbf9f8] border-b border-outline-variant/10 z-30">
+<div class="flex justify-between items-center px-8 py-4 max-w-5xl mx-auto w-full">
+<div class="flex items-center gap-4">
+<span class="text-xl font-bold italic text-[#06619c]">Academic Archivist</span>
+</div>
+<nav class="flex gap-8">
+<a class="text-[#06619c] border-b-2 border-[#06619c] pb-1 font-inter text-sm font-semibold tracking-tight hover:text-[#337ab7] transition-colors" href="#">Conferences</a>
+<a class="text-slate-500 font-inter text-sm font-medium tracking-tight hover:text-[#337ab7] transition-colors" href="#">Deadlines</a>
+<a class="text-slate-500 font-inter text-sm font-medium tracking-tight hover:text-[#337ab7] transition-colors" href="#">API Docs</a>
+</nav>
+</div>
+</header>
+<!-- Main Content -->
+<main class="p-8 max-w-5xl mx-auto w-full flex-grow">
+<!-- Filter Builder -->
+<section class="mb-8 bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/10">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-sm font-bold tracking-widest uppercase text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">filter_alt</span> Query Builder
+                    </h3>
+<div class="flex gap-2">
+<button class="text-xs font-bold text-primary hover:underline">Clear all</button>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex flex-wrap items-center gap-3">
+<div class="px-3 py-1.5 bg-surface-container-high rounded text-xs font-medium border border-outline-variant/20 flex items-center gap-2">
+<span class="text-primary-container font-black">WHERE</span>
+<span>Tag</span>
+<span class="text-outline">CONTAINS</span>
+<span class="font-bold">Empirical</span>
+<button class="material-symbols-outlined text-xs hover:text-error">close</button>
+</div>
+<button class="px-3 py-1 bg-primary/5 text-primary text-xs font-bold rounded border border-primary/20 hover:bg-primary/10 transition-colors">AND</button>
+<div class="px-3 py-1.5 bg-surface-container-high rounded text-xs font-medium border border-outline-variant/20 flex items-center gap-2">
+<span class="text-primary-container font-black">WHERE</span>
+<span>Core</span>
+<span class="text-outline">IS</span>
+<span class="font-bold">A*</span>
+<button class="material-symbols-outlined text-xs hover:text-error">close</button>
+</div>
+<button class="px-3 py-1 bg-surface-container text-on-surface-variant text-xs font-bold rounded border border-outline-variant hover:bg-surface-variant transition-colors">OR</button>
+<button class="px-3 py-1.5 text-xs border-2 border-dashed border-outline-variant rounded text-on-surface-variant font-medium flex items-center gap-1 hover:border-primary hover:text-primary transition-all">
+<span class="material-symbols-outlined text-sm">add_circle</span> Add Condition
+                        </button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-outline-variant/10">
+<div class="flex flex-col gap-1.5">
+<label class="text-[10px] font-bold uppercase text-outline px-1">Date Range</label>
+<input class="bg-surface-container-low border-none rounded p-2 text-xs focus:ring-2 focus:ring-primary" type="date"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-[10px] font-bold uppercase text-outline px-1">Min H5-Index</label>
+<input class="bg-surface-container-low border-none rounded p-2 text-xs focus:ring-2 focus:ring-primary" placeholder="40" type="number"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-[10px] font-bold uppercase text-outline px-1">Location</label>
+<select class="bg-surface-container-low border-none rounded p-2 text-xs focus:ring-2 focus:ring-primary">
+<option>All Locations</option>
+<option>Europe</option>
+<option>North America</option>
+<option>Asia</option>
+</select>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-[10px] font-bold uppercase text-outline px-1">Venue Type</label>
+<select class="bg-surface-container-low border-none rounded p-2 text-xs focus:ring-2 focus:ring-primary">
+<option>Conference</option>
+<option>Journal</option>
+<option>Workshop</option>
+</select>
+</div>
+</div>
+</div>
+</section>
+<!-- API Preview Section -->
+<section class="mb-8 bg-secondary/5 rounded-xl border border-secondary/20 p-6">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">api</span>
+<h4 class="text-sm font-bold text-secondary">Export Query &amp; API Hook</h4>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative">
+<select class="bg-surface-container-lowest border-outline-variant/30 text-xs font-medium rounded-lg pr-8 py-1.5 focus:ring-primary">
+<option>Response: JSON</option>
+<option>Response: JSON Feed</option>
+<option>Response: RSS</option>
+<option>Response: Atom</option>
+<option>Response: CSV</option>
+<option>Response: Text</option>
+</select>
+</div>
+<button class="bg-secondary text-white px-4 py-1.5 rounded text-xs font-bold hover:bg-on-secondary-container transition-colors">
+                            Copy URL
+                        </button>
+</div>
+</div>
+<div class="bg-on-surface rounded p-4 font-mono text-[11px] text-primary-fixed leading-relaxed border border-outline/20">
+                    GET https://api.academic-archivist.io/v1/deadlines?query=<span class="text-tertiary-fixed">tags=empirical</span><span class="text-secondary-fixed">&amp;</span><span class="text-tertiary-fixed">core=A*</span><span class="text-secondary-fixed">&amp;</span><span class="text-tertiary-fixed">format=json</span>
+</div>
+</section>
+<!-- Deadlines List -->
+<div class="grid grid-cols-1 gap-4">
+<!-- Deadline Card 1 -->
+<div class="group bg-surface-container-lowest hover:bg-surface-container transition-colors p-6 rounded-xl shadow-sm flex flex-col md:flex-row gap-6 relative border border-outline-variant/5">
+<div class="flex flex-col items-center justify-center min-w-[80px] border-r border-outline-variant/20 pr-6">
+<span class="text-[10px] font-bold uppercase text-outline">Deadline</span>
+<span class="text-2xl font-black text-on-surface">OCT</span>
+<span class="text-xl font-light text-on-surface-variant">14</span>
+</div>
+<div class="flex-grow">
+<div class="flex items-center gap-3 mb-2">
+<h3 class="text-xl font-bold text-on-surface">ASE 2024</h3>
+<span class="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[10px] font-black rounded border border-tertiary/20">CORE A*</span>
+<span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-black rounded border border-primary/20">H5: 64</span>
+</div>
+<p class="text-sm text-on-surface-variant mb-4">39th IEEE/ACM International Conference on Automated Software Engineering</p>
+<div class="flex flex-wrap gap-2">
+<span class="bg-surface-container-high px-2 py-1 rounded text-[10px] font-medium text-on-surface-variant">Testing</span>
+<span class="bg-surface-container-high px-2 py-1 rounded text-[10px] font-medium text-on-surface-variant">Formal Methods</span>
+<span class="bg-surface-container-high px-2 py-1 rounded text-[10px] font-medium text-on-surface-variant">Synthesis</span>
+</div>
+</div>
+<div class="flex flex-col items-end justify-between border-l border-outline-variant/20 pl-6 min-w-[150px]">
+<div class="text-right">
+<div class="flex items-center justify-end gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-xs font-medium">Sacramento, USA</span>
+</div>
+<div class="text-[10px] text-outline mt-1 italic">Abstracts due: Oct 07</div>
+</div>
+<button class="text-primary hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined">bookmark_add</span>
+</button>
+</div>
+</div>
+<!-- Deadline Card 2 (Imminent) -->
+<div class="group bg-surface-container-lowest hover:bg-surface-container transition-colors p-6 rounded-xl shadow-sm flex flex-col md:flex-row gap-6 relative border-l-4 border-l-tertiary border border-outline-variant/5">
+<div class="flex flex-col items-center justify-center min-w-[80px] border-r border-outline-variant/20 pr-6">
+<span class="text-[10px] font-bold uppercase text-tertiary">Closing Soon</span>
+<span class="text-2xl font-black text-tertiary">SEP</span>
+<span class="text-xl font-light text-tertiary">30</span>
+</div>
+<div class="flex-grow">
+<div class="flex items-center gap-3 mb-2">
+<h3 class="text-xl font-bold text-on-surface">ICSE 2025</h3>
+<span class="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[10px] font-black rounded border border-tertiary/20">CORE A*</span>
+<span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-black rounded border border-primary/20">H5: 92</span>
+</div>
+<p class="text-sm text-on-surface-variant mb-4">47th International Conference on Software Engineering</p>
+<div class="flex flex-wrap gap-2">
+<span class="bg-surface-container-high px-2 py-1 rounded text-[10px] font-medium text-on-surface-variant">General SE</span>
+<span class="bg-surface-container-high px-2 py-1 rounded text-[10px] font-medium text-on-surface-variant">Maintenance</span>
+<span class="bg-surface-container-high px-2 py-1 rounded text-[10px] font-medium text-on-surface-variant">Process</span>
+</div>
+</div>
+<div class="flex flex-col items-end justify-between border-l border-outline-variant/20 pl-6 min-w-[150px]">
+<div class="text-right">
+<div class="flex items-center justify-end gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-xs font-medium">Ottawa, Canada</span>
+</div>
+<div class="text-[10px] text-tertiary mt-1 font-bold">4 days remaining</div>
+</div>
+<button class="text-primary hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined">bookmark_add</span>
+</button>
+</div>
+</div>
+<!-- Deadline Card 3 -->
+<div class="group bg-surface-container-lowest hover:bg-surface-container transition-colors p-6 rounded-xl shadow-sm flex flex-col md:flex-row gap-6 relative border border-outline-variant/5">
+<div class="flex flex-col items-center justify-center min-w-[80px] border-r border-outline-variant/20 pr-6">
+<span class="text-[10px] font-bold uppercase text-outline">Deadline</span>
+<span class="text-2xl font-black text-on-surface">NOV</span>
+<span class="text-xl font-light text-on-surface-variant">12</span>
+</div>
+<div class="flex-grow">
+<div class="flex items-center gap-3 mb-2">
+<h3 class="text-xl font-bold text-on-surface">ISSTA 2024</h3>
+<span class="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[10px] font-black rounded border border-tertiary/20">CORE A</span>
+<span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-black rounded border border-primary/20">H5: 48</span>
+</div>
+<p class="text-sm text-on-surface-variant mb-4">ACM SIGSOFT International Symposium on Software Testing and Analysis</p>
+<div class="flex flex-wrap gap-2">
+<span class="bg-surface-container-high px-2 py-1 rounded text-[10px] font-medium text-on-surface-variant">Testing</span>
+<span class="bg-surface-container-high px-2 py-1 rounded text-[10px] font-medium text-on-surface-variant">Security</span>
+</div>
+</div>
+<div class="flex flex-col items-end justify-between border-l border-outline-variant/20 pl-6 min-w-[150px]">
+<div class="text-right">
+<div class="flex items-center justify-end gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-xs font-medium">Vienna, Austria</span>
+</div>
+<div class="text-[10px] text-outline mt-1 italic">Rolling submissions</div>
+</div>
+<button class="text-primary hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined">bookmark_add</span>
+</button>
+</div>
+</div>
+</div>
+<div class="mt-8 flex justify-center">
+<button class="bg-surface-container-high text-on-surface font-bold text-sm py-3 px-8 rounded-full border border-outline-variant/20 hover:bg-surface-variant transition-colors flex items-center gap-2">
+                    Load More Venues
+                    <span class="material-symbols-outlined">expand_more</span>
+</button>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full mt-auto py-8 bg-[#fbf9f8] border-t border-[#e4e2e1]/15">
+<div class="flex flex-col items-center gap-4 px-8 max-w-5xl mx-auto">
+<div class="flex gap-8 mb-2">
+<a class="text-xs font-light Inter text-slate-400 hover:underline hover:text-[#06619c]" href="#">Privacy Policy</a>
+<a class="text-xs font-light Inter text-slate-400 hover:underline hover:text-[#06619c]" href="#">Terms of Service</a>
+<a class="text-xs font-light Inter text-slate-400 hover:underline hover:text-[#06619c]" href="#">API Status</a>
+<a class="text-xs font-light Inter text-slate-400 hover:underline hover:text-[#06619c]" href="#">GitHub</a>
+</div>
+<p class="text-xs font-light Inter text-slate-400 opacity-80 text-center">
+                    © 2024 Academic Archivist. For the Software Engineering Research Community.
+                </p>
+</div>
+</footer>
+</div>
+</body></html>
