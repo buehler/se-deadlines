@@ -202,7 +202,7 @@ export function serializeExecutionQuery(
   node: QueryNode,
   isRoot = false
 ): string | null {
-  return serializeNode(node, normalizeDateToUtcIso, isRoot);
+  return serializeNode(node, normalizeDateToPageValue, isRoot);
 }
 
 export function serializePageQuery(node: QueryNode, isRoot = false): string | null {

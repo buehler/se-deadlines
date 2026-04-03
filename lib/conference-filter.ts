@@ -59,6 +59,14 @@ function getFieldData(conference: Conference, field: string): unknown {
   }
 }
 
+function normalizeDeadlineOperand(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value;
+  }
+
+  return new Date(`${value}T00:00:00.000Z`).toISOString();
+}
+
 function getResolvedValue(conference: Conference, value: RsqlValue): RsqlValue {
   if (Array.isArray(value)) {
     return value.map((entry) => {
@@ -69,6 +77,22 @@ function getResolvedValue(conference: Conference, value: RsqlValue): RsqlValue {
 
   const resolved = getFieldData(conference, value);
   return typeof resolved === "string" ? resolved : value;
+}
+
+function getComparableValue(conference: Conference, field: string, value: RsqlValue) {
+  const resolvedValue = getResolvedValue(conference, value);
+
+  if (field !== "deadline") {
+    return resolvedValue;
+  }
+
+  if (Array.isArray(resolvedValue)) {
+    return resolvedValue.map(normalizeDeadlineOperand);
+  }
+
+  return typeof resolvedValue === "string"
+    ? normalizeDeadlineOperand(resolvedValue)
+    : resolvedValue;
 }
 
 function compareWithWildcard(patternWithWildcard: string, value: string) {
@@ -93,7 +117,7 @@ function compareArrayEquality(
 
 function evalBasicExpression(node: Extract<RsqlNode, { type: "BASIC_EXPRESSION" }>, conference: Conference) {
   const data = getFieldData(conference, node.field);
-  const resolvedValue = getResolvedValue(conference, node.value);
+  const resolvedValue = getComparableValue(conference, node.field, node.value);
   const listData = Array.isArray(data)
     ? data.map((item) => `${item}`.toLowerCase())
     : null;
