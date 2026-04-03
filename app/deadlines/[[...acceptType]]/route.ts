@@ -1,52 +1,13 @@
-import { format, parse } from '@formkit/tempo';
+import { format } from '@formkit/tempo';
 import { RsqlFilter } from '@mw-experts/rsql';
 import { Feed } from 'feed';
 import ical, { ICalCalendarMethod, ICalEventClass } from 'ical-generator';
-import yaml from 'js-yaml';
+import { Conference, getConferences } from '@/lib/data';
 import { NextURL } from 'next/dist/server/web/next-url';
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'node:crypto';
 
-export const CONFERENCES_URL =
-  'https://raw.githubusercontent.com/se-deadlines/se-deadlines.github.io/refs/heads/main/_data/conferences.yml';
-// export const TYPES_URL =
-//   'https://raw.githubusercontent.com/se-deadlines/se-deadlines.github.io/refs/heads/main/_data/types.yml';
-
-type Venue = {
-  name: string;
-  description: string;
-  year: number;
-  link: string;
-  deadline: string[];
-  date?: string;
-  place?: string;
-  note?: string;
-  tags: string[];
-};
-
-type ConvertedVenue = Venue & {
-  deadline: Date;
-};
-
-async function getData() {
-  const revalidate = 60 * 60 * 24; // revalidate every 24 hours
-  const [confs] = await Promise.all([
-    fetch(CONFERENCES_URL, {
-      next: {
-        revalidate,
-      },
-    }).then((r) => r.text()),
-    // fetch(TYPES_URL, {
-    //   next: {
-    //     revalidate,
-    //   },
-    // }).then((r) => r.text()),
-  ]);
-
-  return yaml.load(confs) as Venue[];
-}
-
-async function formatText(venues: ConvertedVenue[]) {
+async function formatText(venues: Conference[]) {
   const contentType = 'text/plain;charset=utf-8';
   const data = [];
 
@@ -65,7 +26,7 @@ async function formatText(venues: ConvertedVenue[]) {
     }
     data.push(`  Link: ${v.link}`);
     if (v.tags.length > 0) {
-      data.push(`  Tags: ${v.tags.join(', ')}`);
+      data.push(`  Tags: ${v.tags.map((tag) => tag.name).join(', ')}`);
     }
     data.push('');
   }
@@ -73,11 +34,11 @@ async function formatText(venues: ConvertedVenue[]) {
   return { contentType, data: data.join('\n') };
 }
 
-function createVenueId(venue: ConvertedVenue) {
+function createVenueId(venue: Conference) {
   return createHash('sha256').update(JSON.stringify(venue)).digest('hex');
 }
 
-function buildFeed(venues: ConvertedVenue[], uri: NextURL) {
+function buildFeed(venues: Conference[], uri: NextURL) {
   const feed = new Feed({
     title: 'SE Deadlines',
     description: 'Software engineering conference deadlines from the SE Deadlines dataset.',
@@ -105,7 +66,7 @@ function buildFeed(venues: ConvertedVenue[], uri: NextURL) {
         .join(''),
       category:
         v.tags.map((t) => ({
-          name: t,
+          name: t.name,
         })) ?? [],
       date: v.deadline,
     });
@@ -114,27 +75,27 @@ function buildFeed(venues: ConvertedVenue[], uri: NextURL) {
   return feed;
 }
 
-async function formatRSS(venues: ConvertedVenue[], uri: NextURL) {
+async function formatRSS(venues: Conference[], uri: NextURL) {
   const contentType = 'application/rss+xml;charset=utf-8';
   return { contentType, data: buildFeed(venues, uri).rss2() };
 }
 
-async function formatJsonFeed(venues: ConvertedVenue[], uri: NextURL) {
+async function formatJsonFeed(venues: Conference[], uri: NextURL) {
   const contentType = 'application/feed+json;charset=utf-8';
   return { contentType, data: buildFeed(venues, uri).json1() };
 }
 
-async function formatJson(venues: ConvertedVenue[]) {
+async function formatJson(venues: Conference[]) {
   const contentType = 'application/json;charset=utf-8';
   return { contentType, data: JSON.stringify(venues) };
 }
 
-async function formatAtom(venues: ConvertedVenue[], uri: NextURL) {
+async function formatAtom(venues: Conference[], uri: NextURL) {
   const contentType = 'application/atom+xml;charset=utf-8';
   return { contentType, data: buildFeed(venues, uri).atom1() };
 }
 
-async function formatICAL(venues: ConvertedVenue[], uri: NextURL) {
+async function formatICAL(venues: Conference[], uri: NextURL) {
   const contentType = 'text/calendar;charset=utf-8';
   const calendar = ical({
     name: 'SE Deadlines',
@@ -164,7 +125,7 @@ async function formatICAL(venues: ConvertedVenue[], uri: NextURL) {
         .filter(Boolean)
         .join('\n'),
       location: v.place,
-      categories: v.tags.map((t) => ({ name: t })),
+      categories: v.tags.map((t) => ({ name: t.name })),
       class: ICalEventClass.PUBLIC,
       url: v.link,
     });
@@ -174,7 +135,7 @@ async function formatICAL(venues: ConvertedVenue[], uri: NextURL) {
 }
 
 const converters: {
-  [key: string]: (venues: ConvertedVenue[], uri: NextURL) => Promise<{ contentType: string; data: string }>;
+  [key: string]: (venues: Conference[], uri: NextURL) => Promise<{ contentType: string; data: string }>;
 } = {
   rss: formatRSS,
   'json-feed': formatJsonFeed,
@@ -192,19 +153,7 @@ export async function GET(
     params: Promise<{ acceptType?: string[] }>;
   }
 ) {
-  const venues = (await getData())
-    .map((v) => {
-      try {
-        return {
-          ...v,
-          deadline: parse(v.deadline[0], 'YYYY-MM-DD HH:mm'),
-        } as ConvertedVenue;
-      } catch {
-        return null;
-      }
-    })
-    .filter((v) => v !== null)
-    .toSorted((a, b) => a.deadline.getTime() - b.deadline.getTime());
+  const venues = await getConferences();
   const { acceptType } = await params;
   const requestedType = acceptType?.[0] ?? 'text';
   const searchQ = request.nextUrl.searchParams.get('q');

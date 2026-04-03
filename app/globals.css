@@ -53,7 +53,7 @@
   --color-secondary-fixed: #d0e4ff;
   --color-tertiary: #313bff;
   --color-on-error: #ffffff;
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
   --font-headline: var(--font-inter);
   --font-body: var(--font-inter);
