@@ -1,7 +1,7 @@
 import { format } from '@formkit/tempo';
-import { RsqlFilter } from '@mw-experts/rsql';
 import { Feed } from 'feed';
 import ical, { ICalCalendarMethod, ICalEventClass } from 'ical-generator';
+import { filterConferences } from '@/lib/conference-filter';
 import { Conference, getConferences } from '@/lib/data';
 import { NextURL } from 'next/dist/server/web/next-url';
 import { NextRequest, NextResponse } from 'next/server';
@@ -157,7 +157,7 @@ export async function GET(
   const { acceptType } = await params;
   const requestedType = acceptType?.[0] ?? 'text';
   const searchQ = request.nextUrl.searchParams.get('q');
-  const result = !!searchQ ? RsqlFilter.getInstance().filter(searchQ, venues) : venues;
+  const result = !!searchQ ? filterConferences(searchQ, venues) : venues;
 
   const { contentType, data } = await (converters[requestedType] || converters['default'])(result, request.nextUrl);
 
