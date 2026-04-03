@@ -51,16 +51,20 @@ export function createConditionNode(
   overrides: Partial<Omit<ConditionNode, "type">> = {}
 ): ConditionNode {
   const field = overrides.field ?? DEFAULT_FIELD;
+  const operator =
+    overrides.operator && getAllowedOperators(field).includes(overrides.operator)
+      ? overrides.operator
+      : getDefaultOperator(field);
+  const defaultValue =
+    overrides.value ??
+    (field === "deadline" && operator === "ge" ? getTodayDateString() : "");
 
   return {
     id: overrides.id ?? makeClientNodeId("condition"),
     type: "condition",
     field,
-    operator:
-      overrides.operator && getAllowedOperators(field).includes(overrides.operator)
-        ? overrides.operator
-        : getDefaultOperator(field),
-    value: overrides.value ?? "",
+    operator,
+    value: defaultValue,
   };
 }
 
@@ -81,6 +85,11 @@ export function normalizeDateToUtcIso(value: string) {
   }
 
   return new Date(`${value}T00:00:00.000Z`).toISOString();
+}
+
+export function getTodayDateString(date = new Date()) {
+  const timezoneOffset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 10);
 }
 
 function sanitizeValue(value: string) {
@@ -206,6 +215,10 @@ export function serializeExecutionQuery(
 }
 
 export function serializePageQuery(node: QueryNode, isRoot = false): string | null {
+  if (isImplicitDefaultRootGroup(node)) {
+    return null;
+  }
+
   return serializeNode(node, normalizeDateToPageValue, isRoot);
 }
 
@@ -240,6 +253,28 @@ export function buildFetchUri(format: OutputFormat, query: string | null) {
   }
 
   return `/deadlines/${normalizedFormat}?q=${encodeURIComponent(query)}`;
+}
+
+export function buildDefaultDeadlineQuery(today: string) {
+  return today ? `deadline=ge="${today}"` : null;
+}
+
+function isImplicitDefaultCondition(node: QueryNode) {
+  return (
+    node.type === "condition" &&
+    node.field === "deadline" &&
+    node.operator === "ge" &&
+    node.value === getTodayDateString()
+  );
+}
+
+function isImplicitDefaultRootGroup(node: QueryNode) {
+  return (
+    node.type === "group" &&
+    node.combinator === "AND" &&
+    node.children.length === 1 &&
+    isImplicitDefaultCondition(node.children[0])
+  );
 }
 
 const TOKEN_TO_OPERATOR: Partial<Record<RsqlTokenType, BuilderOperator>> = {
@@ -467,6 +502,7 @@ export function getPlaceholder(
 }
 
 export function getEmptyRootGroup() {
+  const today = getTodayDateString();
   return createGroupNode({
     id: "root",
     combinator: "AND",
@@ -475,7 +511,7 @@ export function getEmptyRootGroup() {
         id: "condition-0",
         field: DEFAULT_FIELD,
         operator: DEFAULT_OPERATOR,
-        value: "",
+        value: today,
       }),
     ],
   });

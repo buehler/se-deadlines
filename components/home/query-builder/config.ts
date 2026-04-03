@@ -106,5 +106,5 @@ export const FIELD_DEFINITIONS: Record<BuilderFieldKey, BuilderFieldDefinition> 
 
 export const FIELD_OPTIONS = Object.values(FIELD_DEFINITIONS);
 
-export const DEFAULT_FIELD: BuilderFieldKey = "tags.name";
-export const DEFAULT_OPERATOR: BuilderOperator = "includesOne";
+export const DEFAULT_FIELD: BuilderFieldKey = "deadline";
+export const DEFAULT_OPERATOR: BuilderOperator = "ge";

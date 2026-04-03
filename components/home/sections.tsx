@@ -1,18 +1,13 @@
-import Link from "next/link";
+import Link from 'next/link';
 
-import { QueryBuilder } from "@/components/home/query-builder/query-builder";
+import { QueryBuilder } from '@/components/home/query-builder/query-builder';
 
 function HomeHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-outline-variant/10 bg-surface/85 backdrop-blur-xl">
       <div className="editorial-shell flex min-h-18 items-center justify-between gap-6 py-5">
-        <span className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">
-          SE Deadlines
-        </span>
-        <nav
-          aria-label="Primary"
-          className="flex items-center gap-5 text-sm text-on-surface-variant"
-        >
+        <span className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">SE Deadlines</span>
+        <nav aria-label="Primary" className="flex items-center gap-5 text-sm text-on-surface-variant">
           <a className="font-semibold text-primary hover:text-primary" href="#workspace">
             Query
           </a>
@@ -27,11 +22,7 @@ function HomeHeader() {
 
 function QueryBuilderSection() {
   return (
-    <section
-      id="workspace"
-      aria-labelledby="query-builder-title"
-      className="editorial-shell scroll-mt-24 pt-12 sm:pt-16"
-    >
+    <section id="workspace" aria-labelledby="query-builder-title" className="editorial-shell scroll-mt-24 pt-12 sm:pt-16">
       <div className="mx-auto max-w-5xl">
         <div className="max-w-3xl">
           <h1
@@ -41,8 +32,14 @@ function QueryBuilderSection() {
             SE Deadlines for conferences
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-on-surface-variant sm:text-lg">
-            Filter the conference dataset and shape the query before hitting the
-            endpoint.
+            Filter the conference dataset and shape the query before hitting the endpoint.
+          </p>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-outline sm:text-base">
+            This dataset comes from a third-party source. Thanks to{' '}
+            <a href="https://se-deadlines.github.io/" target="_blank">
+              https://se-deadlines.github.io/
+            </a>{' '}
+            for providing the data and keeping it up to date.
           </p>
         </div>
         <QueryBuilder />

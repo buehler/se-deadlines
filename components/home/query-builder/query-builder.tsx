@@ -15,11 +15,13 @@ import type {
 } from '@/components/home/query-builder/types';
 import {
   appendNode,
+  buildDefaultDeadlineQuery,
   buildFetchUri,
   buildReadableAbsoluteUri,
   changeGroupCombinator,
   createConditionNode,
   createGroupNode,
+  getTodayDateString,
   getAllowedOperators,
   getEmptyRootGroup,
   getPlaceholder,
@@ -386,9 +388,11 @@ export function QueryBuilder() {
   const [copied, setCopied] = useState(false);
   const [origin, setOrigin] = useState('http://localhost:3000');
   const [isUrlReady, setIsUrlReady] = useState(false);
+  const [today, setToday] = useState('');
 
   useEffect(() => {
     setOrigin(window.location.origin);
+    setToday(getTodayDateString());
     const currentQuery = new URLSearchParams(window.location.search).get('q');
     setRootGroup(hydrateRootGroupFromQuery(currentQuery));
     setIsUrlReady(true);
@@ -396,10 +400,14 @@ export function QueryBuilder() {
 
   const pageQuery = useMemo(() => serializePageQuery(rootGroup, true), [rootGroup]);
   const executionQuery = useMemo(() => serializeExecutionQuery(rootGroup, true), [rootGroup]);
-  const deferredExecutionQuery = useDeferredValue(executionQuery);
+  const effectiveExecutionQuery = useMemo(
+    () => executionQuery ?? buildDefaultDeadlineQuery(today),
+    [executionQuery, today]
+  );
+  const deferredExecutionQuery = useDeferredValue(effectiveExecutionQuery);
   const displayUri = useMemo(
-    () => buildReadableAbsoluteUri(origin, selectedFormat, executionQuery),
-    [origin, selectedFormat, executionQuery]
+    () => buildReadableAbsoluteUri(origin, selectedFormat, effectiveExecutionQuery),
+    [origin, selectedFormat, effectiveExecutionQuery]
   );
   const fetchUri = useMemo(() => buildFetchUri('json', deferredExecutionQuery), [deferredExecutionQuery]);
 
