@@ -23,10 +23,12 @@ import {
   getAllowedOperators,
   getEmptyRootGroup,
   getPlaceholder,
+  hydrateRootGroupFromQuery,
   isDateField,
   removeNode,
   resetOperatorForField,
-  serializeNode,
+  serializeExecutionQuery,
+  serializePageQuery,
   updateNode,
 } from '@/components/home/query-builder/utils';
 import { Badge } from '@/components/ui/badge';
@@ -283,7 +285,7 @@ function ConferenceCard({ conference }: { conference: Conference }) {
             {formatDate(conference.deadline, 'MMM', 'en-US').toUpperCase()}
           </div>
           <div className="text-2xl font-light text-on-surface-variant">{formatDate(conference.deadline, 'DD', 'en-US')}</div>
-          <div className="mt-3 text-xs text-outline">{conference.year}</div>
+          <div className="mt-3 text-xs text-outline">{formatDate(conference.deadline, 'YYYY', 'en-US')}</div>
         </div>
 
         <div className="min-w-0 flex-1">
@@ -383,17 +385,39 @@ export function QueryBuilder() {
   const [previewState, setPreviewState] = useState<PreviewState>(INITIAL_PREVIEW_STATE);
   const [copied, setCopied] = useState(false);
   const [origin, setOrigin] = useState('http://localhost:3000');
+  const [isUrlReady, setIsUrlReady] = useState(false);
 
   useEffect(() => {
     setOrigin(window.location.origin);
+    const currentQuery = new URLSearchParams(window.location.search).get('q');
+    setRootGroup(hydrateRootGroupFromQuery(currentQuery));
+    setIsUrlReady(true);
   }, []);
 
-  const query = useMemo(() => serializeNode(rootGroup, true), [rootGroup]);
-  const deferredQuery = useDeferredValue(query);
-  const displayUri = useMemo(() => buildReadableAbsoluteUri(origin, selectedFormat, query), [origin, selectedFormat, query]);
-  const fetchUri = useMemo(() => buildFetchUri('json', deferredQuery), [deferredQuery]);
+  const pageQuery = useMemo(() => serializePageQuery(rootGroup, true), [rootGroup]);
+  const executionQuery = useMemo(() => serializeExecutionQuery(rootGroup, true), [rootGroup]);
+  const deferredExecutionQuery = useDeferredValue(executionQuery);
+  const displayUri = useMemo(
+    () => buildReadableAbsoluteUri(origin, selectedFormat, executionQuery),
+    [origin, selectedFormat, executionQuery]
+  );
+  const fetchUri = useMemo(() => buildFetchUri('json', deferredExecutionQuery), [deferredExecutionQuery]);
 
   useEffect(() => {
+    if (!isUrlReady) {
+      return;
+    }
+
+    const pathname = window.location.pathname;
+    const nextUrl = pageQuery ? `${pathname}?q=${pageQuery}` : pathname;
+    window.history.replaceState(null, '', nextUrl);
+  }, [isUrlReady, pageQuery]);
+
+  useEffect(() => {
+    if (!isUrlReady) {
+      return;
+    }
+
     const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       setPreviewState((current) => ({
@@ -440,7 +464,7 @@ export function QueryBuilder() {
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [fetchUri]);
+  }, [fetchUri, isUrlReady]);
 
   useEffect(() => {
     if (!copied) {
@@ -454,6 +478,10 @@ export function QueryBuilder() {
   const handleCopyUri = async () => {
     await navigator.clipboard.writeText(displayUri);
     setCopied(true);
+  };
+
+  const handleOpenUri = () => {
+    window.open(displayUri, '_blank', 'noopener,noreferrer');
   };
 
   const handleClearAll = () => {
@@ -557,7 +585,15 @@ export function QueryBuilder() {
               <code>{displayUri}</code>
             </pre>
 
-            <div className="mt-4 flex justify-end">
+            <div className="mt-4 flex flex-wrap justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleOpenUri}
+                className="rounded-full border-outline-variant/20 bg-surface-container-lowest px-4 text-on-surface shadow-none hover:bg-surface-container-high"
+              >
+                Open URI
+              </Button>
               <Button
                 type="button"
                 variant="secondary"
